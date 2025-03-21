@@ -93,7 +93,10 @@
         <div class="token-section">
             <p><strong>🚀 MAT Token is your key to escape!</strong></p>
             <p><strong>Contract Address (Polygon Network):</strong></p>
-            <p style="color: #00ff99; font-size: 1.5em;">0x1775960550f0d4292B1d28F7cF3a0C75775B85c0</p>
+            <p id="tokenAddress" style="color: #00ff99; font-size: 1.5em; display: inline-block; margin-right: 10px;">
+                0x1775960550f0d4292B1d28F7cF3a0C75775B85c0
+            </p>
+            <button class="button" onclick="copyTokenAddress()">Copy</button>
             <button class="button" onclick="enterPortal()">BUY MAT TOKEN NOW</button>
         </div>
 
@@ -106,6 +109,15 @@
         function enterPortal() {
             alert("You have taken the first step. The blockchain is opening the exit...");
             window.location.href = "https://quickswap.exchange/#/swap?currency0=ETH&currency1=0x1775960550f0d4292B1d28F7cF3a0C75775B85c0&swapIndex=1";
+        }
+
+        function copyTokenAddress() {
+            const tokenAddress = "0x1775960550f0d4292B1d28F7cF3a0C75775B85c0";
+            navigator.clipboard.writeText(tokenAddress).then(() => {
+                alert("Token address copied to clipboard!");
+            }).catch(err => {
+                console.error("Failed to copy", err);
+            });
         }
 
         async function connectWallet() {
