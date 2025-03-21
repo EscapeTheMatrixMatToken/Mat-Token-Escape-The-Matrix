@@ -11,6 +11,7 @@
             font-family: 'Courier New', Courier, monospace;
             text-align: center;
             padding: 50px;
+            overflow: hidden;
         }
         h1 {
             font-size: 3em;
@@ -42,18 +43,58 @@
             color: #0ff;
             border: 2px solid #0ff;
         }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
+    <canvas id="matrixCanvas"></canvas>
     <h1 class="matrix">MAT Token: The Key to Freedom</h1>
     <p>Blockchain is the answer. AI and the Metaverse have trapped humanity in an illusion. <br>
     MAT Token is the gateway to reality. Will you take the leap?</p>
+    <p><strong>MAT Token Contract Address (Polygon Network):</strong></p>
+    <p style="color: #0f0;">0x1775960550f0d4292B1d28F7cF3a0C75775B85c0</p>
     <button class="button" onclick="enterPortal()">Exit the Matrix</button>
     <script>
         function enterPortal() {
             alert("You have taken the first step. The blockchain is opening the exit...");
             window.location.href = "https://quickswap.exchange/#/swap?currency0=ETH&currency1=0x1775960550f0d4292B1d28F7cF3a0C75775B85c0&swapIndex=1";
         }
+
+        // Matrix Animation
+        const canvas = document.getElementById("matrixCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(0);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0f0";
+            ctx.font = fontSize + "px Courier New";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
     </script>
 </body>
 </html>
