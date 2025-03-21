@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAT Token - Escape the Matrix</title>
+    <style>
+        body {
+            background-color: black;
+            color: #0ff;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 10px #0ff;
+        }
+        p {
+            font-size: 1.5em;
+            text-shadow: 0 0 5px #0ff;
+        }
+        .matrix {
+            animation: flicker 1.5s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        .button {
+            background: #0ff;
+            color: black;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 10px #0ff;
+        }
+        .button:hover {
+            background: black;
+            color: #0ff;
+            border: 2px solid #0ff;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="matrix">MAT Token: The Key to Freedom</h1>
+    <p>Blockchain is the answer. AI and the Metaverse have trapped humanity in an illusion. <br>
+    MAT Token is the gateway to reality. Will you take the leap?</p>
+    <button class="button" onclick="enterPortal()">Exit the Matrix</button>
+    <script>
+        function enterPortal() {
+            alert("You have taken the first step. The blockchain is opening the exit...");
+            window.location.href = "https://github.com/your-repo/MAT-Token";
+        }
+    </script>
+</body>
+</html>
