@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAT Token - Escape the Matrix</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         body {
             background-color: #000;
@@ -37,11 +36,11 @@
             background: #00ff99;
             color: black;
             padding: 15px 35px;
-            font-size: 1.2em;
+            font-size: 1.4em;
             font-weight: bold;
             border: none;
             cursor: pointer;
-            margin: 10px;
+            margin-top: 30px;
             box-shadow: 0 0 15px #00ff99;
             border-radius: 5px;
         }
@@ -49,6 +48,9 @@
             background: black;
             color: #00ff99;
             border: 2px solid #00ff99;
+        }
+        .hidden {
+            display: none;
         }
         canvas {
             position: fixed;
@@ -71,28 +73,12 @@
             margin-top: 40px;
             box-shadow: 0 0 15px #00ff99;
         }
-        .wallet-container {
-            margin-bottom: 20px;
-        }
-        .wallet-address {
-            font-size: 1.2em;
-            margin-top: 10px;
-            color: #00ff99;
-        }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
     <div class="content">
         <h1 class="matrix">MAT Token: The Key to Freedom</h1>
-
-        <!-- Connect/Disconnect Wallet Section -->
-        <div class="wallet-container">
-            <button id="connectButton" class="button" onclick="connectWallet()">Connect Wallet</button>
-            <button id="disconnectButton" class="button" onclick="disconnectWallet()" style="display: none;">Disconnect</button>
-            <p class="wallet-address" id="walletAddress">Not Connected</p>
-        </div>
-
         <p>Blockchain is the answer. AI and the Metaverse have trapped humanity in an illusion.<br>
         MAT Token is the gateway to reality. Will you take the leap?</p>
 
@@ -110,6 +96,10 @@
             <p style="color: #00ff99; font-size: 1.5em;">0x1775960550f0d4292B1d28F7cF3a0C75775B85c0</p>
             <button class="button" onclick="enterPortal()">BUY MAT TOKEN NOW</button>
         </div>
+
+        <!-- Connect/Disconnect Wallet Buttons -->
+        <button id="connectWallet" class="button" onclick="connectWallet()">Connect Wallet</button>
+        <button id="disconnectWallet" class="button hidden" onclick="disconnectWallet()">Disconnect</button>
     </div>
 
     <script>
@@ -121,44 +111,38 @@
         async function connectWallet() {
             if (window.ethereum) {
                 try {
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    await provider.send("eth_requestAccounts", []);
-                    const signer = provider.getSigner();
-                    const userWallet = await signer.getAddress();
-                    
-                    localStorage.setItem("connectedWallet", userWallet); // Αποθήκευση του πορτοφολιού
-                    updateUI(userWallet);
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletAddress = accounts[0];
+                    localStorage.setItem("connectedWallet", walletAddress);
+                    updateUI(walletAddress);
                 } catch (error) {
-                    console.error(error);
-                    alert("Connection failed. Please try again!");
+                    console.error("User rejected connection", error);
                 }
             } else {
-                alert("Metamask not detected! Please install Metamask.");
+                alert("MetaMask not detected. Please install MetaMask.");
             }
         }
 
         function disconnectWallet() {
-            localStorage.removeItem("connectedWallet"); // Διαγραφή από το localStorage
+            localStorage.removeItem("connectedWallet");
             updateUI(null);
         }
 
-        function updateUI(wallet) {
-            const connectButton = document.getElementById("connectButton");
-            const disconnectButton = document.getElementById("disconnectButton");
-            const walletAddressText = document.getElementById("walletAddress");
+        function updateUI(walletAddress) {
+            const connectBtn = document.getElementById("connectWallet");
+            const disconnectBtn = document.getElementById("disconnectWallet");
 
-            if (wallet) {
-                walletAddressText.innerText = "Connected: " + wallet;
-                connectButton.style.display = "none";
-                disconnectButton.style.display = "inline-block";
+            if (walletAddress) {
+                connectBtn.classList.add("hidden");
+                disconnectBtn.classList.remove("hidden");
+                disconnectBtn.innerText = `Disconnect (${walletAddress.substring(0, 6)}...${walletAddress.slice(-4)})`;
             } else {
-                walletAddressText.innerText = "Not Connected";
-                connectButton.style.display = "inline-block";
-                disconnectButton.style.display = "none";
+                connectBtn.classList.remove("hidden");
+                disconnectBtn.classList.add("hidden");
             }
         }
 
-        // Έλεγχος αν το πορτοφόλι είναι ήδη συνδεδεμένο
+        // Auto-load wallet if connected
         window.onload = () => {
             const savedWallet = localStorage.getItem("connectedWallet");
             if (savedWallet) {
@@ -194,6 +178,11 @@
             }
         }
         setInterval(drawMatrix, 50);
+
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 </body>
 </html>
