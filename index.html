@@ -37,11 +37,11 @@
             background: #00ff99;
             color: black;
             padding: 15px 35px;
-            font-size: 1.4em;
+            font-size: 1.2em;
             font-weight: bold;
             border: none;
             cursor: pointer;
-            margin-top: 30px;
+            margin: 10px;
             box-shadow: 0 0 15px #00ff99;
             border-radius: 5px;
         }
@@ -71,9 +71,12 @@
             margin-top: 40px;
             box-shadow: 0 0 15px #00ff99;
         }
+        .wallet-container {
+            margin-bottom: 20px;
+        }
         .wallet-address {
             font-size: 1.2em;
-            margin-top: 15px;
+            margin-top: 10px;
             color: #00ff99;
         }
     </style>
@@ -82,12 +85,16 @@
     <canvas id="matrixCanvas"></canvas>
     <div class="content">
         <h1 class="matrix">MAT Token: The Key to Freedom</h1>
+
+        <!-- Connect/Disconnect Wallet Section -->
+        <div class="wallet-container">
+            <button id="connectButton" class="button" onclick="connectWallet()">Connect Wallet</button>
+            <button id="disconnectButton" class="button" onclick="disconnectWallet()" style="display: none;">Disconnect</button>
+            <p class="wallet-address" id="walletAddress">Not Connected</p>
+        </div>
+
         <p>Blockchain is the answer. AI and the Metaverse have trapped humanity in an illusion.<br>
         MAT Token is the gateway to reality. Will you take the leap?</p>
-
-        <!-- Connect Wallet Button -->
-        <button class="button" onclick="connectWallet()">Connect Wallet</button>
-        <p class="wallet-address" id="walletAddress">Not Connected</p>
 
         <div class="token-section">
             <p><strong>🚀 MAT Token is your key to escape!</strong></p>
@@ -110,7 +117,9 @@
                     await provider.send("eth_requestAccounts", []);
                     const signer = provider.getSigner();
                     const userWallet = await signer.getAddress();
-                    document.getElementById("walletAddress").innerText = "Connected: " + userWallet;
+                    
+                    localStorage.setItem("connectedWallet", userWallet); // Αποθήκευση του πορτοφολιού
+                    updateUI(userWallet);
                 } catch (error) {
                     console.error(error);
                     alert("Connection failed. Please try again!");
@@ -119,6 +128,35 @@
                 alert("Metamask not detected! Please install Metamask.");
             }
         }
+
+        function disconnectWallet() {
+            localStorage.removeItem("connectedWallet"); // Διαγραφή από το localStorage
+            updateUI(null);
+        }
+
+        function updateUI(wallet) {
+            const connectButton = document.getElementById("connectButton");
+            const disconnectButton = document.getElementById("disconnectButton");
+            const walletAddressText = document.getElementById("walletAddress");
+
+            if (wallet) {
+                walletAddressText.innerText = "Connected: " + wallet;
+                connectButton.style.display = "none";
+                disconnectButton.style.display = "inline-block";
+            } else {
+                walletAddressText.innerText = "Not Connected";
+                connectButton.style.display = "inline-block";
+                disconnectButton.style.display = "none";
+            }
+        }
+
+        // Έλεγχος αν το πορτοφόλι είναι ήδη συνδεδεμένο
+        window.onload = () => {
+            const savedWallet = localStorage.getItem("connectedWallet");
+            if (savedWallet) {
+                updateUI(savedWallet);
+            }
+        };
 
         // Matrix Animation
         const canvas = document.getElementById("matrixCanvas");
