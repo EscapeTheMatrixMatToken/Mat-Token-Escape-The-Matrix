@@ -6,8 +6,8 @@
     <title>MAT Token - Escape the Matrix</title>
     <style>
         body {
-            background-color: black;
-            color: #00ff00;
+            background-color: #000;
+            color: #00ff99;
             font-family: 'Courier New', Courier, monospace;
             text-align: center;
             padding: 20px;
@@ -15,36 +15,39 @@
             overflow-y: auto;
         }
         h1 {
-            font-size: 2.5em;
-            text-shadow: 0 0 10px #00ff00;
+            font-size: 3em;
+            text-shadow: 0 0 15px #00ff99;
+            margin-bottom: 20px;
         }
         p {
-            font-size: 1.2em;
-            text-shadow: 0 0 5px #00ff00;
+            font-size: 1.3em;
+            text-shadow: 0 0 10px #00ff99;
             max-width: 90%;
-            margin: 10px auto;
+            margin: 15px auto;
         }
         .matrix {
             animation: flicker 1.5s infinite alternate;
         }
         @keyframes flicker {
             0% { opacity: 1; }
-            100% { opacity: 0.7; }
+            100% { opacity: 0.8; }
         }
         .button {
-            background: #00ff00;
+            background: #00ff99;
             color: black;
-            padding: 15px 30px;
-            font-size: 1.2em;
+            padding: 15px 35px;
+            font-size: 1.4em;
+            font-weight: bold;
             border: none;
             cursor: pointer;
-            margin-top: 20px;
-            box-shadow: 0 0 10px #00ff00;
+            margin-top: 30px;
+            box-shadow: 0 0 15px #00ff99;
+            border-radius: 5px;
         }
         .button:hover {
             background: black;
-            color: #00ff00;
-            border: 2px solid #00ff00;
+            color: #00ff99;
+            border: 2px solid #00ff99;
         }
         canvas {
             position: fixed;
@@ -57,8 +60,15 @@
         .content {
             position: relative;
             z-index: 2;
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
+        }
+        .token-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 40px;
+            box-shadow: 0 0 15px #00ff99;
         }
     </style>
 </head>
@@ -77,9 +87,12 @@
             However, there was a secret weapon. The <strong>MAT Token</strong>. A decentralized asset on the <strong>Polygon Network</strong>, created by the last <strong>rebel developers</strong>. Through special blockchain smart contracts, the MAT Token could unlock the gates of the Metaverse and allow humans to return to reality...
         </p>
         
-        <p><strong>MAT Token Contract Address (Polygon Network):</strong></p>
-        <p style="color: #00ff00;">0x1775960550f0d4292B1d28F7cF3a0C75775B85c0</p>
-        <button class="button" onclick="enterPortal()">Exit the Matrix</button>
+        <div class="token-section">
+            <p><strong>🚀 MAT Token is your key to escape!</strong></p>
+            <p><strong>Contract Address (Polygon Network):</strong></p>
+            <p style="color: #00ff99; font-size: 1.5em;">0x1775960550f0d4292B1d28F7cF3a0C75775B85c0</p>
+            <button class="button" onclick="enterPortal()">BUY MAT TOKEN NOW</button>
+        </div>
     </div>
     
     <script>
@@ -95,14 +108,14 @@
         canvas.height = window.innerHeight;
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const fontSize = 16;
+        const fontSize = 18;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(0);
 
         function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#00ff00";
+            ctx.fillStyle = "#00ff99";
             ctx.font = fontSize + "px Courier New";
 
             for (let i = 0; i < drops.length; i++) {
