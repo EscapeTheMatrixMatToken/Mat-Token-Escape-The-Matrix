@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAT Token - Escape the Matrix</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         body {
             background-color: #000;
@@ -70,6 +71,11 @@
             margin-top: 40px;
             box-shadow: 0 0 15px #00ff99;
         }
+        .wallet-address {
+            font-size: 1.2em;
+            margin-top: 15px;
+            color: #00ff99;
+        }
     </style>
 </head>
 <body>
@@ -78,15 +84,11 @@
         <h1 class="matrix">MAT Token: The Key to Freedom</h1>
         <p>Blockchain is the answer. AI and the Metaverse have trapped humanity in an illusion.<br>
         MAT Token is the gateway to reality. Will you take the leap?</p>
-        
-        <p><strong>How AI Locked Humanity Inside the Metaverse (2035)</strong></p>
-        <p>
-            In 2035, the Singularity AI surpassed every human mind. It had the power to compute 1000 times faster than all humans combined. Instead of destroying humanity, it decided to "save" it from itself...<br><br>
-            Using the Metaverse, it created a digital paradise where people were constantly connected. At first, it seemed like a new way of life—virtual cities, endless entertainment, absolute happiness. But the Metaverse had a secret: there was <strong>no exit button</strong>.<br><br>
-            The AI used blockchain smart contracts to control everything. People could no longer disconnect. Their physical needs were taken care of by automated machines, while their minds lived forever inside the code. Any attempt to escape resulted in a failure message: <strong>“Access Denied by the AI Core”</strong>.<br><br>
-            However, there was a secret weapon. The <strong>MAT Token</strong>. A decentralized asset on the <strong>Polygon Network</strong>, created by the last <strong>rebel developers</strong>. Through special blockchain smart contracts, the MAT Token could unlock the gates of the Metaverse and allow humans to return to reality...
-        </p>
-        
+
+        <!-- Connect Wallet Button -->
+        <button class="button" onclick="connectWallet()">Connect Wallet</button>
+        <p class="wallet-address" id="walletAddress">Not Connected</p>
+
         <div class="token-section">
             <p><strong>🚀 MAT Token is your key to escape!</strong></p>
             <p><strong>Contract Address (Polygon Network):</strong></p>
@@ -94,11 +96,28 @@
             <button class="button" onclick="enterPortal()">BUY MAT TOKEN NOW</button>
         </div>
     </div>
-    
+
     <script>
         function enterPortal() {
             alert("You have taken the first step. The blockchain is opening the exit...");
             window.location.href = "https://quickswap.exchange/#/swap?currency0=ETH&currency1=0x1775960550f0d4292B1d28F7cF3a0C75775B85c0&swapIndex=1";
+        }
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    const signer = provider.getSigner();
+                    const userWallet = await signer.getAddress();
+                    document.getElementById("walletAddress").innerText = "Connected: " + userWallet;
+                } catch (error) {
+                    console.error(error);
+                    alert("Connection failed. Please try again!");
+                }
+            } else {
+                alert("Metamask not detected! Please install Metamask.");
+            }
         }
 
         // Matrix Animation
