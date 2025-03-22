@@ -4,13 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEX Price Comparison</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #prices { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Σύγκριση Τιμών DEX</h1>
-    <button id="fetchPrices">Λήψη Τιμών</button>
-    <div id="output">Παρακαλώ περιμένετε...</div>
+    <h1> Σύγκριση Τιμών από QuickSwap & Uniswap </h1>
+    <button onclick="comparePrices()">Σύγκριση Τιμών</button>
+    <div id="prices">
+        <p><strong>QuickSwap:</strong> <span id="quickswap-price">-</span></p>
+        <p><strong>Uniswap:</strong> <span id="uniswap-price">-</span></p>
+    </div>
 
-    <script src="script.js"></script>
+    <script>
+        const PROXY_URL = "https://workerjs.escapethematrixmattoken.workers.dev/?url=";
+
+        async function fetchWithProxy(url, query) {
+            try {
+                let response = await fetch(PROXY_URL + encodeURIComponent(url), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+
+                if (response.ok) {
+                    let data = await response.json();
+                    return data;
+                } else {
+                    console.error("Σφάλμα απόκρισης:", response.status);
+                }
+            } catch (e) {
+                console.error("Σφάλμα σύνδεσης:", e);
+            }
+            return null;
+        }
+
+        async function getQuickSwapPrice() {
+            console.log("Λήψη τιμής από QuickSwap...");
+            const url = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
+            const query = `{
+                pairs(where: { id: "0x6ff62bfb8c12109e8000935a6de54dad83a4f39f" }) {
+                    token0Price
+                }
+            }`;
+            let data = await fetchWithProxy(url, query);
+            if (data && data.data && data.data.pairs.length > 0) {
+                return data.data.pairs[0].token0Price;
+            }
+            return "N/A";
+        }
+
+        async function getUniswapPrice() {
+            console.log("Λήψη τιμής από Uniswap...");
+            const url = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
+            const query = `{
+                pools(where: { id: "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8" }) {
+                    token0Price
+                }
+            }`;
+            let data = await fetchWithProxy(url, query);
+            if (data && data.data && data.data.pools.length > 0) {
+                return data.data.pools[0].token0Price;
+            }
+            return "N/A";
+        }
+
+        async function comparePrices() {
+            document.getElementById("quickswap-price").innerText = "Loading...";
+            document.getElementById("uniswap-price").innerText = "Loading...";
+
+            let quickswapPrice = await getQuickSwapPrice();
+            let uniswapPrice = await getUniswapPrice();
+
+            document.getElementById("quickswap-price").innerText = quickswapPrice;
+            document.getElementById("uniswap-price").innerText = uniswapPrice;
+        }
+    </script>
 </body>
 </html>
