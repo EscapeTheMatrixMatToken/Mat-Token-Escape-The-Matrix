@@ -17,7 +17,12 @@
     <script>
         const web3 = new Web3("https://polygon-rpc.com");
         const chainlinkFeed = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"; // Chainlink ETH/USD on Polygon
-        
+
+        // ✅ Proxy για παράκαμψη CORS
+        const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+        const quickswapUrl = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
+        const uniswapUrl = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
+
         async function getChainlinkPrice() {
             try {
                 console.log("Fetching Chainlink price...");
@@ -36,12 +41,8 @@
         async function getQuickSwapPrice() {
             try {
                 console.log("Fetching QuickSwap price...");
-                const query = `{
-                    pair(id: "0x853ee4b2a13f8a742d64c8f088be7ba2131f670d") {
-                        token0Price
-                    }
-                }`;
-                const response = await fetch("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap", {
+                const query = `{ pair(id: "0x853ee4b2a13f8a742d64c8f088be7ba2131f670d") { token0Price } }`;
+                const response = await fetch(proxyUrl + quickswapUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ query })
@@ -58,12 +59,8 @@
         async function getUniswapPrice() {
             try {
                 console.log("Fetching Uniswap price...");
-                const query = `{
-                    pool(id: "0x1f98431c8ad98523631ae4a59f267346ea31f984") {
-                        token0Price
-                    }
-                }`;
-                const response = await fetch("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3", {
+                const query = `{ pool(id: "0x1f98431c8ad98523631ae4a59f267346ea31f984") { token0Price } }`;
+                const response = await fetch(proxyUrl + uniswapUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ query })
@@ -86,7 +83,8 @@
             document.getElementById("quickswap-price").innerText = `$${quickswap}`;
             document.getElementById("uniswap-price").innerText = `$${uniswap}`;
             
-            const bestPrice = Math.max(chainlink, quickswap, uniswap);
+            const prices = [chainlink, quickswap, uniswap].filter(price => price !== "Error").map(parseFloat);
+            const bestPrice = prices.length > 0 ? Math.max(...prices) : "N/A";
             document.getElementById("best-price").innerText = `$${bestPrice}`;
         }
 
