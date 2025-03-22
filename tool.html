@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEX Price Comparison</title>
+    <title>Σύγκριση Τιμών DEX</title>
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
-        style-src 'self' https://fonts.googleapis.com;
-        font-src 'self' https://fonts.gstatic.com;">
+        script-src 'self' https://cdn.jsdelivr.net;
+        style-src 'self';
+        font-src 'self';">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,9 +41,9 @@
     </style>
 </head>
 <body>
-    <h1>DEX Price Comparison</h1>
-    <button id="fetchPrices">Fetch Prices</button>
-    <div id="output">Loading...</div>
+    <h1>Σύγκριση Τιμών DEX</h1>
+    <button id="fetchPrices">Λήψη Τιμών</button>
+    <div id="output">Παρακαλώ περιμένετε...</div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script>
@@ -56,45 +56,42 @@
         async function fetchWithProxy(url) {
             for (let proxy of proxies) {
                 try {
-                    let response = await fetch(proxy + encodeURIComponent(url));
+                    let response = await fetch(proxy + encodeURIComponent(url), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: '{ bundle(id: "1") { ethPrice } }' })
+                    });
                     if (response.ok) return await response.json();
                 } catch (e) {
-                    console.error("Proxy failed:", proxy, e);
+                    console.error("Αποτυχία proxy:", proxy, e);
                 }
             }
-            throw new Error("All proxies failed");
-        }
-
-        async function getChainlinkPrice() {
-            console.log("Fetching Chainlink price...");
-            return 0.21; // Placeholder for actual Chainlink API call
+            throw new Error("Όλοι οι proxies απέτυχαν");
         }
 
         async function getQuickSwapPrice() {
-            console.log("Fetching QuickSwap price...");
+            console.log("Λήψη τιμής από QuickSwap...");
             const url = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
             let data = await fetchWithProxy(url);
-            return data?.data?.pair?.tokenPrice || "Error";
+            return data?.data?.bundle?.ethPrice || "Σφάλμα";
         }
 
         async function getUniswapPrice() {
-            console.log("Fetching Uniswap price...");
+            console.log("Λήψη τιμής από Uniswap...");
             const url = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
             let data = await fetchWithProxy(url);
-            return data?.data?.pair?.tokenPrice || "Error";
+            return data?.data?.bundle?.ethPrice || "Σφάλμα";
         }
 
         async function comparePrices() {
-            document.getElementById("output").innerHTML = "Fetching prices...";
+            document.getElementById("output").innerHTML = "Λήψη τιμών...";
 
-            let chainlink = await getChainlinkPrice();
             let quickswap = await getQuickSwapPrice();
             let uniswap = await getUniswapPrice();
 
             document.getElementById("output").innerHTML = `
-                <strong>Chainlink Price:</strong> ${chainlink} USDC<br>
-                <strong>QuickSwap Price:</strong> ${quickswap} USDC<br>
-                <strong>Uniswap Price:</strong> ${uniswap} USDC
+                <strong>Τιμή QuickSwap:</strong> ${quickswap} USDC<br>
+                <strong>Τιμή Uniswap:</strong> ${uniswap} USDC
             `;
         }
 
