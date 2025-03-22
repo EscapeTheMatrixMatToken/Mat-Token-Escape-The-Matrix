@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEX Price Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>DEX Price Comparison</h1>
+    <p>QuickSwap Price: <span id="quickswap-price">Loading...</span></p>
+    <p>Uniswap Price: <span id="uniswap-price">Loading...</span></p>
+    <p>Chainlink Price: <span id="chainlink-price">Loading...</span></p>
+
+    <script>
+        const chainlinkFeed = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"; // Chainlink ETH/USD on Polygon
+        const web3 = new Web3("https://polygon-rpc.com");
+
+        async function getChainlinkPrice() {
+            const aggregatorV3InterfaceABI = [
+                {
+                    "inputs": [],
+                    "name": "latestRoundData",
+                    "outputs": [
+                        { "internalType": "uint80", "name": "roundId", "type": "uint80" },
+                        { "internalType": "int256", "name": "answer", "type": "int256" },
+                        { "internalType": "uint256", "name": "startedAt", "type": "uint256" },
+                        { "internalType": "uint256", "name": "updatedAt", "type": "uint256" },
+                        { "internalType": "uint80", "name": "answeredInRound", "type": "uint80" }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ];
+            const contract = new web3.eth.Contract(aggregatorV3InterfaceABI, chainlinkFeed);
+            const priceData = await contract.methods.latestRoundData().call();
+            const price = (parseInt(priceData.answer) / 1e8).toFixed(2);
+            document.getElementById("chainlink-price").innerText = `$${price}`;
+        }
+
+        getChainlinkPrice();
+    </script>
+</body>
+</html>
