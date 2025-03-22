@@ -3,79 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEX Price Comparator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+    <title>DEX Price Comparison</title>
+    <script defer src="script.js"></script>
 </head>
 <body>
-
-    <h1>Σύγκριση Τιμών από Uniswap & QuickSwap</h1>
+    <h1>Σύγκριση Τιμών DEX</h1>
     <button onclick="comparePrices()">Σύγκριση Τιμών</button>
-    <div id="result">Πατήστε το κουμπί για να συγκρίνετε τις τιμές...</div>
-
-    <script>
-        const workerURL = "https://workerjs.escapethematrixmattoken.workers.dev/?url=";
-
-        async function fetchFromWorker(apiUrl) {
-            try {
-                let response = await fetch(workerURL + encodeURIComponent(apiUrl));
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                console.error("Σφάλμα:", error);
-                return null;
-            }
-        }
-
-        async function getQuickSwapPrice() {
-            console.log("Λήψη τιμής από QuickSwap...");
-            const apiUrl = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
-            const data = await fetchFromWorker(apiUrl);
-            if (data && data.data && data.data.pairs) {
-                return parseFloat(data.data.pairs[0].token0Price).toFixed(6);
-            }
-            return "Αποτυχία λήψης";
-        }
-
-        async function getUniswapPrice() {
-            console.log("Λήψη τιμής από Uniswap...");
-            const apiUrl = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
-            const data = await fetchFromWorker(apiUrl);
-            if (data && data.data && data.data.pools) {
-                return parseFloat(data.data.pools[0].token0Price).toFixed(6);
-            }
-            return "Αποτυχία λήψης";
-        }
-
-        async function comparePrices() {
-            document.getElementById("result").innerText = "Φόρτωση τιμών...";
-            
-            const [quickSwapPrice, uniswapPrice] = await Promise.all([
-                getQuickSwapPrice(),
-                getUniswapPrice()
-            ]);
-
-            document.getElementById("result").innerHTML = `
-                🔵 QuickSwap: ${quickSwapPrice} USD <br>
-                🟠 Uniswap: ${uniswapPrice} USD <br>
-                <strong>${quickSwapPrice < uniswapPrice ? "QuickSwap έχει καλύτερη τιμή!" : "Uniswap έχει καλύτερη τιμή!"}</strong>
-            `;
-        }
-    </script>
-
+    <p id="quickSwapPrice">QuickSwap Price: Loading...</p>
+    <p id="uniswapPrice">Uniswap Price: Loading...</p>
 </body>
 </html>
