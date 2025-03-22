@@ -4,7 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEX Price Comparison</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+        style-src 'self' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>DEX Price Comparison</h1>
+    <button id="fetchPrices">Fetch Prices</button>
+    <div id="output">Loading...</div>
+
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script>
         const proxies = [
@@ -12,7 +52,7 @@
             "https://api.allorigins.win/raw?url=",
             "https://thingproxy.freeboard.io/fetch/"
         ];
-        
+
         async function fetchWithProxy(url) {
             for (let proxy of proxies) {
                 try {
@@ -24,42 +64,41 @@
             }
             throw new Error("All proxies failed");
         }
-        
+
         async function getChainlinkPrice() {
             console.log("Fetching Chainlink price...");
             return 0.21; // Placeholder for actual Chainlink API call
         }
-        
+
         async function getQuickSwapPrice() {
             console.log("Fetching QuickSwap price...");
             const url = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
             let data = await fetchWithProxy(url);
             return data?.data?.pair?.tokenPrice || "Error";
         }
-        
+
         async function getUniswapPrice() {
             console.log("Fetching Uniswap price...");
             const url = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
             let data = await fetchWithProxy(url);
             return data?.data?.pair?.tokenPrice || "Error";
         }
-        
+
         async function comparePrices() {
+            document.getElementById("output").innerHTML = "Fetching prices...";
+
             let chainlink = await getChainlinkPrice();
             let quickswap = await getQuickSwapPrice();
             let uniswap = await getUniswapPrice();
-            
+
             document.getElementById("output").innerHTML = `
-                Chainlink Price: ${chainlink}<br>
-                QuickSwap Price: ${quickswap}<br>
-                Uniswap Price: ${uniswap}
+                <strong>Chainlink Price:</strong> ${chainlink} USDC<br>
+                <strong>QuickSwap Price:</strong> ${quickswap} USDC<br>
+                <strong>Uniswap Price:</strong> ${uniswap} USDC
             `;
         }
+
+        document.getElementById("fetchPrices").addEventListener("click", comparePrices);
     </script>
-</head>
-<body>
-    <h1>DEX Price Comparison</h1>
-    <button onclick="comparePrices()">Fetch Prices</button>
-    <div id="output">Loading...</div>
 </body>
 </html>
