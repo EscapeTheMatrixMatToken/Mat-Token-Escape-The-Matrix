@@ -2,7 +2,7 @@ const workerProxy = "https://workerjs.escapethematrixmattoken.workers.dev?url=";
 
 async function getPriceFromDEX(apiUrl) {
     try {
-        let response = await fetch(workerProxy + encodeURIComponent(apiUrl), {
+        const response = await fetch(workerProxy + encodeURIComponent(apiUrl), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query: `{
@@ -12,26 +12,26 @@ async function getPriceFromDEX(apiUrl) {
             }` })
         });
 
-        let data = await response.json();
+        const data = await response.json();
         return data.data.pools[0].token0Price;
     } catch (error) {
-        console.error("Error fetching DEX price:", error);
+        console.error("Σφάλμα κατά την ανάκτηση της τιμής από το DEX:", error);
         return null;
     }
 }
 
 async function comparePrices() {
-    document.getElementById("quickSwapPrice").innerText = "QuickSwap Price: Loading...";
-    document.getElementById("uniswapPrice").innerText = "Uniswap Price: Loading...";
+    document.getElementById("quickSwapPrice").innerText = "Τιμή QuickSwap: Φόρτωση...";
+    document.getElementById("uniswapPrice").innerText = "Τιμή Uniswap: Φόρτωση...";
 
-    let quickSwapPrice = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap-v3");
-    let uniswapPrice = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3");
+    const quickSwapPrice = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap-v3");
+    const uniswapPrice = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3");
 
     document.getElementById("quickSwapPrice").innerText = quickSwapPrice 
-        ? `QuickSwap Price: ${quickSwapPrice}`
-        : "QuickSwap Price: Failed to fetch";
+        ? `Τιμή QuickSwap: ${quickSwapPrice}`
+        : "Τιμή QuickSwap: Αποτυχία ανάκτησης";
 
     document.getElementById("uniswapPrice").innerText = uniswapPrice 
-        ? `Uniswap Price: ${uniswapPrice}`
-        : "Uniswap Price: Failed to fetch";
+        ? `Τιμή Uniswap: ${uniswapPrice}`
+        : "Τιμή Uniswap: Αποτυχία ανάκτησης";
 }
