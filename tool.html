@@ -18,10 +18,25 @@
         const web3 = new Web3("https://polygon-rpc.com");
         const chainlinkFeed = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"; // Chainlink ETH/USD on Polygon
 
-        // ✅ Proxy για παράκαμψη CORS
-        const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-        const quickswapUrl = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
-        const uniswapUrl = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
+        // 🔄 Λίστα με 3 διαφορετικά CORS proxies
+        const proxyList = [
+            "https://corsproxy.io/?", 
+            "https://api.allorigins.win/raw?url=",
+            "https://thingproxy.freeboard.io/fetch/"
+        ];
+
+        // 🔄 Συνάρτηση που προσπαθεί με διαφορετικά proxies
+        async function fetchWithProxy(url) {
+            for (let proxy of proxyList) {
+                try {
+                    const response = await fetch(proxy + url, { method: "POST", headers: { "Content-Type": "application/json" } });
+                    if (response.ok) return await response.json();
+                } catch (error) {
+                    console.warn(`Proxy failed: ${proxy}`);
+                }
+            }
+            throw new Error("All proxies failed");
+        }
 
         async function getChainlinkPrice() {
             try {
@@ -42,13 +57,7 @@
             try {
                 console.log("Fetching QuickSwap price...");
                 const query = `{ pair(id: "0x853ee4b2a13f8a742d64c8f088be7ba2131f670d") { token0Price } }`;
-                const response = await fetch(proxyUrl + quickswapUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query })
-                });
-                const data = await response.json();
-                console.log("QuickSwap data:", data);
+                const data = await fetchWithProxy("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap", query);
                 return parseFloat(data.data.pair.token0Price).toFixed(4);
             } catch (error) {
                 console.error("Error fetching QuickSwap price:", error);
@@ -60,13 +69,7 @@
             try {
                 console.log("Fetching Uniswap price...");
                 const query = `{ pool(id: "0x1f98431c8ad98523631ae4a59f267346ea31f984") { token0Price } }`;
-                const response = await fetch(proxyUrl + uniswapUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query })
-                });
-                const data = await response.json();
-                console.log("Uniswap data:", data);
+                const data = await fetchWithProxy("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3", query);
                 return parseFloat(data.data.pool.token0Price).toFixed(4);
             } catch (error) {
                 console.error("Error fetching Uniswap price:", error);
