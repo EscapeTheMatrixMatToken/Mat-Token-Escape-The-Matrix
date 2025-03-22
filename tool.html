@@ -18,19 +18,28 @@
         const web3 = new Web3("https://polygon-rpc.com");
         const chainlinkFeed = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"; // Chainlink ETH/USD on Polygon
 
-        // 🔄 Λίστα με 3 διαφορετικά CORS proxies
+        // ✅ Λίστα με αξιόπιστα CORS proxies (χωρίς redirects)
         const proxyList = [
-            "https://corsproxy.io/?", 
-            "https://api.allorigins.win/raw?url=",
+            "https://api.allorigins.win/get?url=",
+            "https://proxy.cors.sh/",
             "https://thingproxy.freeboard.io/fetch/"
         ];
 
-        // 🔄 Συνάρτηση που προσπαθεί με διαφορετικά proxies
-        async function fetchWithProxy(url) {
+        // ✅ Συνάρτηση που κάνει retry με διαφορετικά proxies
+        async function fetchWithProxy(url, query) {
+            const headers = { "Content-Type": "application/json" };
             for (let proxy of proxyList) {
                 try {
-                    const response = await fetch(proxy + url, { method: "POST", headers: { "Content-Type": "application/json" } });
-                    if (response.ok) return await response.json();
+                    const response = await fetch(proxy + encodeURIComponent(url), {
+                        method: "POST",
+                        headers: headers,
+                        body: JSON.stringify({ query })
+                    });
+
+                    if (response.ok) {
+                        const json = await response.json();
+                        return JSON.parse(json.contents || json); // Διόρθωση CSP
+                    }
                 } catch (error) {
                     console.warn(`Proxy failed: ${proxy}`);
                 }
