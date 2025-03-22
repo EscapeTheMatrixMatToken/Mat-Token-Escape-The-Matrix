@@ -19,40 +19,62 @@
         const chainlinkFeed = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0"; // Chainlink ETH/USD on Polygon
         
         async function getChainlinkPrice() {
-            const aggregatorV3InterfaceABI = [{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"}];
-            const contract = new web3.eth.Contract(aggregatorV3InterfaceABI, chainlinkFeed);
-            const priceData = await contract.methods.latestRoundData().call();
-            return (parseInt(priceData.answer) / 1e8).toFixed(2);
+            try {
+                console.log("Fetching Chainlink price...");
+                const aggregatorV3InterfaceABI = [{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"}];
+                const contract = new web3.eth.Contract(aggregatorV3InterfaceABI, chainlinkFeed);
+                const priceData = await contract.methods.latestRoundData().call();
+                const price = (parseInt(priceData.answer) / 1e8).toFixed(2);
+                console.log("Chainlink price:", price);
+                return price;
+            } catch (error) {
+                console.error("Error fetching Chainlink price:", error);
+                return "Error";
+            }
         }
 
         async function getQuickSwapPrice() {
-            const query = `{
-                pair(id: "0x853ee4b2a13f8a742d64c8f088be7ba2131f670d") {
-                    token0Price
-                }
-            }`;
-            const response = await fetch("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query })
-            });
-            const data = await response.json();
-            return parseFloat(data.data.pair.token0Price).toFixed(4);
+            try {
+                console.log("Fetching QuickSwap price...");
+                const query = `{
+                    pair(id: "0x853ee4b2a13f8a742d64c8f088be7ba2131f670d") {
+                        token0Price
+                    }
+                }`;
+                const response = await fetch("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                console.log("QuickSwap data:", data);
+                return parseFloat(data.data.pair.token0Price).toFixed(4);
+            } catch (error) {
+                console.error("Error fetching QuickSwap price:", error);
+                return "Error";
+            }
         }
 
         async function getUniswapPrice() {
-            const query = `{
-                pool(id: "0x1f98431c8ad98523631ae4a59f267346ea31f984") {
-                    token0Price
-                }
-            }`;
-            const response = await fetch("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query })
-            });
-            const data = await response.json();
-            return parseFloat(data.data.pool.token0Price).toFixed(4);
+            try {
+                console.log("Fetching Uniswap price...");
+                const query = `{
+                    pool(id: "0x1f98431c8ad98523631ae4a59f267346ea31f984") {
+                        token0Price
+                    }
+                }`;
+                const response = await fetch("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                console.log("Uniswap data:", data);
+                return parseFloat(data.data.pool.token0Price).toFixed(4);
+            } catch (error) {
+                console.error("Error fetching Uniswap price:", error);
+                return "Error";
+            }
         }
 
         async function comparePrices() {
@@ -67,3 +89,21 @@
             const bestPrice = Math.max(chainlink, quickswap, uniswap);
             document.getElementById("best-price").innerText = `$${bestPrice}`;
         }
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    alert("Connected account: " + accounts[0]);
+                } catch (error) {
+                    console.error("Error connecting wallet:", error);
+                }
+            } else {
+                alert("MetaMask is not installed!");
+            }
+        }
+
+        comparePrices();
+    </script>
+</body>
+</html>
