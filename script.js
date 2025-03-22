@@ -1,4 +1,4 @@
-const workerProxy = "https://workerjs.escapethematrixmattoken.workers.dev?url=";
+const workerProxy = "https://workerjs.escapethematrixmattoken.workers.dev/?url=";
 
 async function getPriceFromDEX(apiUrl) {
     try {
