@@ -1,54 +1,29 @@
-const proxies = [
-    "https://corsproxy.io/?",
-    "https://api.allorigins.win/raw?url=",
-    "https://thingproxy.freeboard.io/fetch/"
-];
+const workerProxy = "https://workerjs.escapethematrixmattoken.workers.dev?url=";
 
-async function fetchWithProxy(url, query) {
-    for (let proxy of proxies) {
-        try {
-            let response = await fetch(proxy + encodeURIComponent(url), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
-
-            if (response.ok) {
-                return await response.json();
-            }
-        } catch (e) {
-            console.error("Αποτυχία proxy:", proxy, e);
-        }
+async function getPriceFromDEX(apiUrl) {
+    try {
+        let response = await fetch(workerProxy + encodeURIComponent(apiUrl));
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching DEX price:", error);
+        return null;
     }
-    throw new Error("Όλοι οι proxies απέτυχαν");
-}
-
-async function getQuickSwapPrice() {
-    console.log("Λήψη τιμής από QuickSwap...");
-    const url = "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap";
-    const query = `{ bundle(id: "1") { ethPrice } }`;
-    let data = await fetchWithProxy(url, query);
-    return data?.data?.bundle?.ethPrice || "Σφάλμα";
-}
-
-async function getUniswapPrice() {
-    console.log("Λήψη τιμής από Uniswap...");
-    const url = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
-    const query = `{ bundle(id: "1") { ethPrice } }`;
-    let data = await fetchWithProxy(url, query);
-    return data?.data?.bundle?.ethPrice || "Σφάλμα";
 }
 
 async function comparePrices() {
-    document.getElementById("output").innerHTML = "Λήψη τιμών...";
+    document.getElementById("quickSwapPrice").innerText = "QuickSwap Price: Loading...";
+    document.getElementById("uniswapPrice").innerText = "Uniswap Price: Loading...";
 
-    let quickswap = await getQuickSwapPrice();
-    let uniswap = await getUniswapPrice();
+    let quickSwapData = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/sameepsi/quickswap");
+    let uniswapData = await getPriceFromDEX("https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3");
 
-    document.getElementById("output").innerHTML = `
-        <strong>Τιμή QuickSwap:</strong> ${quickswap} USDC<br>
-        <strong>Τιμή Uniswap:</strong> ${uniswap} USDC
-    `;
+    document.getElementById("quickSwapPrice").innerText = quickSwapData 
+        ? `QuickSwap Price: ${JSON.stringify(quickSwapData)}`
+        : "QuickSwap Price: Failed to fetch";
+
+    document.getElementById("uniswapPrice").innerText = uniswapData 
+        ? `Uniswap Price: ${JSON.stringify(uniswapData)}`
+        : "Uniswap Price: Failed to fetch";
 }
 
-document.getElementById("fetchPrices").addEventListener("click", comparePrices);
