@@ -4,10 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix Snake Game</title>
-    <!-- Απενεργοποίηση Favicon -->
-    <link rel="icon" href="data:,">
     <style>
-        /* ... (το υπάρχον CSS παραμένει το ίδιο) ... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: green;
+            text-align: center;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background-color: #000;
+            border: 5px solid green;
+            margin: 20px auto;
+        }
+        .pill {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .red-pill {
+            background-color: red;
+        }
+        .blue-pill {
+            background-color: blue;
+        }
+        .snake {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            position: absolute;
+        }
+        #info {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin: auto;
+        }
+        #hearts {
+            color: red;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #wallet-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        #high-score {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        /* Game Pad Styles */
+        #game-pad {
+            display: none; /* Αρχικά κρυφό */
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #game-pad button {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            margin: 5px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            #game-pad {
+                display: flex; /* Εμφάνιση μόνο σε κινητές συσκευές */
+            }
+        }
     </style>
 </head>
 <body>
@@ -38,9 +119,6 @@
         <button id="right-button">➡️</button>
     </div>
 
-    <!-- Προσθήκη Metamask SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk/dist/metamask-sdk.js"></script>
-
     <script>
         let snake, direction, pills, gameLoop, speed;
         let hearts = 3;
@@ -51,32 +129,66 @@
         const heartsDisplay = document.getElementById("hearts");
         const highScoreDisplay = document.getElementById("high-score-value");
 
-        // URL του Google Apps Script Web App
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxNVuSVzUvzUTH25NT4bUTZdx_YkoHWGktzNtpe_mPtldpmBUYzdm6UELp9EjeR91_SwQ/exec";
-
-        // Συνάρτηση για αποθήκευση δεδομένων στο Google Sheet
-        async function saveToGoogleSheet(walletAddress, highScore) {
-            const data = {
-                walletAddress: walletAddress,
-                highScore: highScore
-            };
-
-            try {
-                const response = await fetch(googleScriptUrl, {
-                    method: "POST",
-                    body: JSON.stringify(data),
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-                const result = await response.text();
-                console.log(result); // Εμφάνιση αποτελέσματος στην κονσόλα
-            } catch (error) {
-                console.error("Error saving data:", error);
-            }
+        function resetGame() {
+            hearts = 3;
+            pillCount = 0;
+            speed = 200; 
+            heartsDisplay.innerText = "❤️❤️❤️";
+            pillCounter.innerText = pillCount;
+            clearInterval(gameLoop);
+            gameContainer.innerHTML = "";
         }
 
-        // Όταν ενημερώνεται το high score
+        function startGame() {
+            resetGame(); 
+            snake = [{x: 200, y: 200}];
+            direction = "right";
+            pills = [];
+            gameContainer.innerHTML = "";
+            spawnPill(); 
+            gameLoop = setInterval(moveSnake, speed);
+        }
+
+        function spawnPill() {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * 40) * 10;
+                y = Math.floor(Math.random() * 40) * 10;
+            } while (isPositionOccupied(x, y));
+
+            let pill = document.createElement("div");
+            pill.classList.add("pill", Math.random() > 0.5 ? "red-pill" : "blue-pill");
+            pill.style.left = `${x}px`;
+            pill.style.top = `${y}px`;
+            gameContainer.appendChild(pill);
+            pills.push({x, y, element: pill});
+        }
+
+        function isPositionOccupied(x, y) {
+            if (x < 0 || x >= 400 || y < 0 || y >= 400) return true;
+            for (let segment of snake) {
+                if (segment.x === x && segment.y === y) return true;
+            }
+            return false;
+        }
+
+        function moveSnake() {
+            let head = {...snake[0]};
+            if (direction === "right") head.x += 10;
+            if (direction === "left") head.x -= 10;
+            if (direction === "down") head.y += 10;
+            if (direction === "up") head.y -= 10;
+
+            if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+                loseLife();
+                return;
+            }
+
+            snake.unshift(head);
+            if (!checkPillCollision()) snake.pop();
+            renderSnake();
+        }
+
         function checkPillCollision() {
             for (let i = 0; i < pills.length; i++) {
                 if (snake[0].x === pills[i].x && snake[0].y === pills[i].y) {
@@ -92,12 +204,6 @@
                     if (pillCount > highScore) {
                         highScore = pillCount;
                         highScoreDisplay.innerText = highScore;
-
-                        // Αποθήκευση στο Google Sheet αν ο χρήστης είναι συνδεδεμένος
-                        const walletAddress = document.getElementById("wallet-address").innerText;
-                        if (walletAddress) {
-                            saveToGoogleSheet(walletAddress, highScore);
-                        }
                     }
                     return true;
                 }
@@ -105,22 +211,57 @@
             return false;
         }
 
-        // ... (το υπόλοιπο JavaScript παραμένει το ίδιο) ...
+        function renderSnake() {
+            const existingSnakeParts = document.querySelectorAll(".snake");
+            existingSnakeParts.forEach(part => part.remove());
 
-        // Προσθήκη Metamask SDK Λειτουργίας
-        const MMSDK = new MetaMaskSDK();
+            snake.forEach(segment => {
+                let part = document.createElement("div");
+                part.classList.add("snake");
+                part.style.left = `${segment.x}px`;
+                part.style.top = `${segment.y}px`;
+                gameContainer.appendChild(part);
+            });
+        }
 
+        function loseLife() {
+            hearts--;
+            heartsDisplay.innerText = "❤️".repeat(hearts);
+            if (hearts === 0) {
+                alert("Access Denied by the AI Core");
+                clearInterval(gameLoop);
+                resetGame();
+                return;
+            } else {
+                speed = 200;
+                clearInterval(gameLoop);
+                snake = [{x: 200, y: 200}]; 
+                direction = "right"; 
+                gameLoop = setInterval(moveSnake, speed);
+            }
+        }
+
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        function checkWalletConnected() {
+            return walletAddress.innerText !== "";
+        }
+
+        // Σύνδεση με το πορτοφόλι
         async function connectWallet() {
-            try {
-                const accounts = await MMSDK.connect();
-                const walletAddress = accounts[0];
-                document.getElementById("wallet-address").innerText = walletAddress.slice(0, 6) + "...";
-                document.getElementById("connect-button").style.display = "none";
-                document.getElementById("disconnect-button").style.display = "inline-block";
-                document.getElementById("switch-network").style.display = "inline-block";
-                return true;
-            } catch (error) {
-                console.error(error);
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    walletAddress.innerText = accounts[0].slice(0, 6) + "...";
+                    connectButton.style.display = "none";
+                    disconnectButton.style.display = "inline-block";
+                    switchNetworkButton.style.display = "inline-block";
+                    return true;
+                } catch (error) {
+                    console.error(error);
+                    return false;
+                }
+            } else {
+                alert("Please install Metamask!");
                 return false;
             }
         }
@@ -128,7 +269,7 @@
         // Εκκίνηση παιχνιδιού με έλεγχο σύνδεσης
         document.getElementById("start-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
-                await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
+                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
             }
             startGame(); // Το παιχνίδι ξεκινάει ανεξάρτητα από τη σύνδεση
         });
@@ -136,7 +277,7 @@
         // Χάσιμο ζωής με έλεγχο σύνδεσης
         document.getElementById("lose-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
-                await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
+                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
             }
             loseLife(); // Το παιχνίδι συνεχίζει ανεξάρτητα από τη σύνδεση
         });
