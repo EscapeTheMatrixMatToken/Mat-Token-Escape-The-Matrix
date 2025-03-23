@@ -6,110 +6,106 @@
     <title>Matrix Snake Game</title>
     <style>
         body {
-            margin: 0;
-            overflow: hidden;
-            background: black;
-            color: lime;
+            background-color: black;
+            color: green;
             font-family: monospace;
+            text-align: center;
         }
         canvas {
+            background-color: black;
             display: block;
+            margin: auto;
+            border: 2px solid green;
+        }
+        .lives {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <div class="lives">❤️❤️❤️</div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const gridSize = 20;
-        let snake = [{ x: 200, y: 200 }];
-        let direction = { x: 1, y: 0 };
-        let food = { x: 300, y: 200, color: "red" };
+        const box = 20;
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let direction = "RIGHT";
+        let food = randomFood();
         let speed = 200;
         let score = 0;
-
-        function drawMatrixBackground() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "lime";
-            for (let i = 0; i < canvas.width; i += gridSize) {
-                for (let j = 0; j < canvas.height; j += gridSize) {
-                    if (Math.random() > 0.9) {
-                        ctx.fillText(Math.floor(Math.random() * 10), i, j);
-                    }
-                }
-            }
+        let lives = 3;
+        
+        document.addEventListener("keydown", changeDirection);
+        
+        function changeDirection(event) {
+            const key = event.keyCode;
+            if (key === 37 && direction !== "RIGHT") direction = "LEFT";
+            else if (key === 38 && direction !== "DOWN") direction = "UP";
+            else if (key === 39 && direction !== "LEFT") direction = "RIGHT";
+            else if (key === 40 && direction !== "UP") direction = "DOWN";
         }
-
-        function drawSnake() {
-            ctx.fillStyle = "lime";
-            snake.forEach(segment => {
-                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+        
+        function randomFood() {
+            return {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box,
+                color: Math.random() < 0.5 ? "red" : "blue"
+            };
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = food.color;
+            ctx.fillRect(food.x, food.y, box, box);
+            
+            ctx.fillStyle = "green";
+            snake.forEach((segment, index) => {
+                ctx.fillRect(segment.x, segment.y, box, box);
             });
         }
-
-        function drawFood() {
-            ctx.fillStyle = food.color;
-            ctx.fillRect(food.x, food.y, gridSize, gridSize);
-        }
-
-        function moveSnake() {
-            const newHead = {
-                x: snake[0].x + direction.x * gridSize,
-                y: snake[0].y + direction.y * gridSize
-            };
-            snake.unshift(newHead);
-            if (newHead.x === food.x && newHead.y === food.y) {
+        
+        function update() {
+            let head = { ...snake[0] };
+            if (direction === "LEFT") head.x -= box;
+            if (direction === "UP") head.y -= box;
+            if (direction === "RIGHT") head.x += box;
+            if (direction === "DOWN") head.y += box;
+            
+            if (head.x === food.x && head.y === food.y) {
+                food = randomFood();
                 score++;
                 speed = Math.max(50, speed - 5);
-                placeFood();
             } else {
                 snake.pop();
             }
-        }
-
-        function placeFood() {
-            food = {
-                x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
-                y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize,
-                color: Math.random() > 0.5 ? "red" : "blue"
-            };
-        }
-
-        function checkCollision() {
-            if (
-                snake[0].x < 0 || snake[0].x >= canvas.width ||
-                snake[0].y < 0 || snake[0].y >= canvas.height ||
-                snake.slice(1).some(segment => segment.x === snake[0].x && segment.y === snake[0].y)
-            ) {
-                resetGame();
+            
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || 
+                snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                lives--;
+                document.querySelector(".lives").innerText = "❤️".repeat(lives);
+                if (lives === 0) {
+                    alert("Access Denied by the AI Core");
+                    document.location.reload();
+                } else {
+                    snake = [{ x: 10 * box, y: 10 * box }];
+                    direction = "RIGHT";
+                }
             }
+            
+            snake.unshift(head);
         }
-
-        function resetGame() {
-            snake = [{ x: 200, y: 200 }];
-            direction = { x: 1, y: 0 };
-            speed = 200;
-            score = 0;
-            placeFood();
-        }
-
+        
         function gameLoop() {
-            setTimeout(() => {
-                drawMatrixBackground();
-                moveSnake();
-                checkCollision();
-                drawFood();
-                drawSnake();
-                gameLoop();
-            }, speed);
+            draw();
+            update();
+            setTimeout(gameLoop, speed);
         }
-
-        wi
+        
+        gameLoop();
+    </script>
+</body>
+</html>
