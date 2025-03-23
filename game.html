@@ -107,7 +107,6 @@
     <div id="game-container"></div>
     <div id="controls">
         <button id="start-button">Start</button>
-        <button id="lose-button">Lose</button>
     </div>
     <div id="high-score">High Score: <span id="high-score-value">0</span></div>
 
@@ -273,14 +272,6 @@
                 return;
             }
             startGame();
-        });
-
-        // Χάσιμο ζωής με έλεγχο σύνδεσης
-        document.getElementById("lose-button").addEventListener("click", async () => {
-            if (!checkWalletConnected()) {
-                await connectWallet();
-            }
-            loseLife();
         });
 
         // Προσθήκη Game Pad Λειτουργίας
