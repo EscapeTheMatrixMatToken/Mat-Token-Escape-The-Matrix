@@ -6,94 +6,110 @@
     <title>Matrix Snake Game</title>
     <style>
         body {
-            background-color: black;
-            color: green;
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: lime;
             font-family: monospace;
-            text-align: center;
         }
         canvas {
-            background-image: linear-gradient(to bottom, rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.5));
             display: block;
-            margin: auto;
-            border: 2px solid green;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
-    <h1>Matrix Snake Game</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        const box = 20;
-        let snake = [{x: 10 * box, y: 10 * box}];
-        let direction = "RIGHT";
-        let food = generateFood();
-        let game;
+        const gridSize = 20;
+        let snake = [{ x: 200, y: 200 }];
+        let direction = { x: 1, y: 0 };
+        let food = { x: 300, y: 200, color: "red" };
+        let speed = 200;
+        let score = 0;
 
-        document.addEventListener("keydown", changeDirection);
-
-        function changeDirection(event) {
-            const key = event.keyCode;
-            if (key === 37 && direction !== "RIGHT") direction = "LEFT";
-            else if (key === 38 && direction !== "DOWN") direction = "UP";
-            else if (key === 39 && direction !== "LEFT") direction = "RIGHT";
-            else if (key === 40 && direction !== "UP") direction = "DOWN";
-        }
-
-        function generateFood() {
-            return {
-                x: Math.floor(Math.random() * (canvas.width / box)) * box,
-                y: Math.floor(Math.random() * (canvas.height / box)) * box,
-                color: Math.random() > 0.5 ? "red" : "blue" // Red or Blue pill
-            };
-        }
-
-        function drawGame() {
+        function drawMatrixBackground() {
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = food.color;
-            ctx.beginPath();
-            ctx.arc(food.x + box / 2, food.y + box / 2, box / 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            for (let i = 0; i < snake.length; i++) {
-                ctx.fillStyle = i === 0 ? "lime" : "green";
-                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            ctx.fillStyle = "lime";
+            for (let i = 0; i < canvas.width; i += gridSize) {
+                for (let j = 0; j < canvas.height; j += gridSize) {
+                    if (Math.random() > 0.9) {
+                        ctx.fillText(Math.floor(Math.random() * 10), i, j);
+                    }
+                }
             }
+        }
 
-            let snakeX = snake[0].x;
-            let snakeY = snake[0].y;
+        function drawSnake() {
+            ctx.fillStyle = "lime";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+        }
 
-            if (direction === "LEFT") snakeX -= box;
-            if (direction === "UP") snakeY -= box;
-            if (direction === "RIGHT") snakeX += box;
-            if (direction === "DOWN") snakeY += box;
+        function drawFood() {
+            ctx.fillStyle = food.color;
+            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+        }
 
-            if (snakeX === food.x && snakeY === food.y) {
-                food = generateFood();
+        function moveSnake() {
+            const newHead = {
+                x: snake[0].x + direction.x * gridSize,
+                y: snake[0].y + direction.y * gridSize
+            };
+            snake.unshift(newHead);
+            if (newHead.x === food.x && newHead.y === food.y) {
+                score++;
+                speed = Math.max(50, speed - 5);
+                placeFood();
             } else {
                 snake.pop();
             }
+        }
 
-            const newHead = {x: snakeX, y: snakeY};
+        function placeFood() {
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+                y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize,
+                color: Math.random() > 0.5 ? "red" : "blue"
+            };
+        }
 
-            if (snakeX < 0 || snakeY < 0 || snakeX >= canvas.width || snakeY >= canvas.height || collision(newHead, snake)) {
-                clearInterval(game);
-                alert("Game Over");
-                return;
+        function checkCollision() {
+            if (
+                snake[0].x < 0 || snake[0].x >= canvas.width ||
+                snake[0].y < 0 || snake[0].y >= canvas.height ||
+                snake.slice(1).some(segment => segment.x === snake[0].x && segment.y === snake[0].y)
+            ) {
+                resetGame();
             }
-
-            snake.unshift(newHead);
         }
 
-        function collision(head, array) {
-            return array.some(segment => segment.x === head.x && segment.y === head.y);
+        function resetGame() {
+            snake = [{ x: 200, y: 200 }];
+            direction = { x: 1, y: 0 };
+            speed = 200;
+            score = 0;
+            placeFood();
         }
 
-        game = setInterval(drawGame, 100);
-    </script>
-</body>
-</html>
+        function gameLoop() {
+            setTimeout(() => {
+                drawMatrixBackground();
+                moveSnake();
+                checkCollision();
+                drawFood();
+                drawSnake();
+                gameLoop();
+            }, speed);
+        }
+
+        wi
