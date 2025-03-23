@@ -119,6 +119,12 @@
         <button id="right-button">➡️</button>
     </div>
 
+    <!-- Προσθήκη Metamask SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk/dist/metamask-sdk.js"></script>
+
+    <!-- Προσθήκη WalletConnect -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.7.1/dist/umd/index.min.js"></script>
+
     <script>
         let snake, direction, pills, gameLoop, speed;
         let hearts = 3;
@@ -184,6 +190,110 @@
         }
 
         // ... (το υπόλοιπο JavaScript παραμένει το ίδιο) ...
+
+        // Προσθήκη Metamask SDK Λειτουργίας
+        const MMSDK = new MetaMaskSDK();
+
+        async function connectWallet() {
+            try {
+                const accounts = await MMSDK.connect();
+                const walletAddress = accounts[0];
+                document.getElementById("wallet-address").innerText = walletAddress.slice(0, 6) + "...";
+                document.getElementById("connect-button").style.display = "none";
+                document.getElementById("disconnect-button").style.display = "inline-block";
+                document.getElementById("switch-network").style.display = "inline-block";
+                return true;
+            } catch (error) {
+                console.error(error);
+                return false;
+            }
+        }
+
+        // Προσθήκη WalletConnect Λειτουργίας
+        const walletConnect = new WalletConnect({
+            bridge: "https://bridge.walletconnect.org", // WalletConnect Bridge URL
+        });
+
+        async function connectWalletWithWalletConnect() {
+            if (!walletConnect.connected) {
+                await walletConnect.createSession();
+            }
+
+            walletConnect.on("connect", (error, payload) => {
+                if (error) throw error;
+
+                const { accounts } = payload.params[0];
+                const walletAddress = accounts[0];
+                document.getElementById("wallet-address").innerText = walletAddress.slice(0, 6) + "...";
+                document.getElementById("connect-button").style.display = "none";
+                document.getElementById("disconnect-button").style.display = "inline-block";
+                document.getElementById("switch-network").style.display = "inline-block";
+            });
+        }
+
+        // Εκκίνηση παιχνιδιού με έλεγχο σύνδεσης
+        document.getElementById("start-button").addEventListener("click", async () => {
+            if (!checkWalletConnected()) {
+                await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
+                // await connectWalletWithWalletConnect(); // Προσπάθεια σύνδεσης με WalletConnect
+            }
+            startGame(); // Το παιχνίδι ξεκινάει ανεξάρτητα από τη σύνδεση
+        });
+
+        // Χάσιμο ζωής με έλεγχο σύνδεσης
+        document.getElementById("lose-button").addEventListener("click", async () => {
+            if (!checkWalletConnected()) {
+                await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
+                // await connectWalletWithWalletConnect(); // Προσπάθεια σύνδεσης με WalletConnect
+            }
+            loseLife(); // Το παιχνίδι συνεχίζει ανεξάρτητα από τη σύνδεση
+        });
+
+        // Προσθήκη Game Pad Λειτουργίας
+        const upButton = document.getElementById("up-button");
+        const downButton = document.getElementById("down-button");
+        const leftButton = document.getElementById("left-button");
+        const rightButton = document.getElementById("right-button");
+
+        upButton.addEventListener("click", () => {
+            if (direction !== "down") direction = "up";
+        });
+        downButton.addEventListener("click", () => {
+            if (direction !== "up") direction = "down";
+        });
+        leftButton.addEventListener("click", () => {
+            if (direction !== "right") direction = "left";
+        });
+        rightButton.addEventListener("click", () => {
+            if (direction !== "left") direction = "right";
+        });
+
+        // Προσθήκη Wallet Connect Λειτουργίας
+        const connectButton = document.getElementById("connect-button");
+        const disconnectButton = document.getElementById("disconnect-button");
+        const switchNetworkButton = document.getElementById("switch-network");
+        const walletAddress = document.getElementById("wallet-address");
+
+        connectButton.addEventListener("click", connectWallet);
+
+        disconnectButton.addEventListener("click", () => {
+            walletAddress.innerText = "";
+            connectButton.style.display = "inline-block";
+            disconnectButton.style.display = "none";
+            switchNetworkButton.style.display = "none";
+        });
+
+        switchNetworkButton.addEventListener("click", async () => {
+            try {
+                await ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: "0x89" }], // Polygon Mainnet
+                });
+                alert("Switched to Polygon Network!");
+            } catch (error) {
+                console.error(error);
+            }
+        });
     </script>
 </body>
 </html>
