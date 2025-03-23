@@ -241,15 +241,46 @@
             }
         }
 
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp" && direction !== "down") direction = "up";
-            if (e.key === "ArrowDown" && direction !== "up") direction = "down";
-            if (e.key === "ArrowLeft" && direction !== "right") direction = "left";
-            if (e.key === "ArrowRight" && direction !== "left") direction = "right";
+        // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
+        function checkWalletConnected() {
+            return walletAddress.innerText !== "";
+        }
+
+        // Σύνδεση με το πορτοφόλι
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    walletAddress.innerText = accounts[0].slice(0, 6) + "...";
+                    connectButton.style.display = "none";
+                    disconnectButton.style.display = "inline-block";
+                    switchNetworkButton.style.display = "inline-block";
+                    return true;
+                } catch (error) {
+                    console.error(error);
+                    return false;
+                }
+            } else {
+                alert("Please install Metamask!");
+                return false;
+            }
+        }
+
+        // Εκκίνηση παιχνιδιού με έλεγχο σύνδεσης
+        document.getElementById("start-button").addEventListener("click", async () => {
+            if (!checkWalletConnected()) {
+                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
+            }
+            startGame(); // Το παιχνίδι ξεκινάει ανεξάρτητα από τη σύνδεση
         });
 
-        document.getElementById("start-button").addEventListener("click", startGame);
-        document.getElementById("lose-button").addEventListener("click", loseLife);
+        // Χάσιμο ζωής με έλεγχο σύνδεσης
+        document.getElementById("lose-button").addEventListener("click", async () => {
+            if (!checkWalletConnected()) {
+                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
+            }
+            loseLife(); // Το παιχνίδι συνεχίζει ανεξάρτητα από τη σύνδεση
+        });
 
         // Προσθήκη Game Pad Λειτουργίας
         const upButton = document.getElementById("up-button");
@@ -276,21 +307,7 @@
         const switchNetworkButton = document.getElementById("switch-network");
         const walletAddress = document.getElementById("wallet-address");
 
-        connectButton.addEventListener("click", async () => {
-            if (window.ethereum) {
-                try {
-                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-                    walletAddress.innerText = accounts[0].slice(0, 6) + "...";
-                    connectButton.style.display = "none";
-                    disconnectButton.style.display = "inline-block";
-                    switchNetworkButton.style.display = "inline-block";
-                } catch (error) {
-                    console.error(error);
-                }
-            } else {
-                alert("Please install Metamask!");
-            }
-        });
+        connectButton.addEventListener("click", connectWallet);
 
         disconnectButton.addEventListener("click", () => {
             walletAddress.innerText = "";
