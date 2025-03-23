@@ -269,17 +269,18 @@
         // Εκκίνηση παιχνιδιού με έλεγχο σύνδεσης
         document.getElementById("start-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
-                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
+                alert("Παρακαλώ συνδεθείτε με το πορτοφόλι σας για να ξεκινήσετε το παιχνίδι!");
+                return;
             }
-            startGame(); // Το παιχνίδι ξεκινάει ανεξάρτητα από τη σύνδεση
+            startGame();
         });
 
         // Χάσιμο ζωής με έλεγχο σύνδεσης
         document.getElementById("lose-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
-                await connectWallet(); // Προσπάθεια σύνδεσης αν δεν είναι συνδεδεμένος
+                await connectWallet();
             }
-            loseLife(); // Το παιχνίδι συνεχίζει ανεξάρτητα από τη σύνδεση
+            loseLife();
         });
 
         // Προσθήκη Game Pad Λειτουργίας
@@ -325,6 +326,36 @@
                 alert("Switched to Polygon Network!");
             } catch (error) {
                 console.error(error);
+            }
+        });
+
+        // Έλεγχος αν ο χρήστης είναι σε κινητό
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Εμφάνιση του game pad μόνο σε κινητές συσκευές
+        if (isMobileDevice()) {
+            document.getElementById("game-pad").style.display = "flex";
+        } else {
+            document.getElementById("game-pad").style.display = "none";
+        }
+
+        // Προσθήκη event listeners για τα βελάκια
+        document.addEventListener("keydown", (event) => {
+            switch (event.key) {
+                case "ArrowUp":
+                    if (direction !== "down") direction = "up";
+                    break;
+                case "ArrowDown":
+                    if (direction !== "up") direction = "down";
+                    break;
+                case "ArrowLeft":
+                    if (direction !== "right") direction = "left";
+                    break;
+                case "ArrowRight":
+                    if (direction !== "left") direction = "right";
+                    break;
             }
         });
     </script>
