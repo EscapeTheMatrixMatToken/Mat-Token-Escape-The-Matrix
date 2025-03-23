@@ -76,6 +76,9 @@
     </style>
 </head>
 <body>
+            <!-- Connect/Disconnect Wallet Buttons -->
+        <button id="connectWallet" class="button" onclick="connectWallet()">Connect Wallet</button>
+        <button id="disconnectWallet" class="button hidden" onclick="disconnectWallet()">Disconnect</button>
     <canvas id="matrixCanvas"></canvas>
     <div class="content">
         <h1 class="matrix">MAT Token: The Key to Freedom</h1>
@@ -99,10 +102,6 @@
             <button class="button" onclick="copyTokenAddress()">Copy</button>
             <button class="button" onclick="enterPortal()">BUY MAT TOKEN NOW</button>
         </div>
-
-        <!-- Connect/Disconnect Wallet Buttons -->
-        <button id="connectWallet" class="button" onclick="connectWallet()">Connect Wallet</button>
-        <button id="disconnectWallet" class="button hidden" onclick="disconnectWallet()">Disconnect</button>
         <button class="button" onclick="window.location.href='game.html'">Matrix Game</button>
         
     </div>
