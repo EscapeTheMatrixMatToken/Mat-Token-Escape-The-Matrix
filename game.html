@@ -5,7 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix Snake Game</title>
     <style>
-        /* ... (το υπάρχον CSS παραμένει το ίδιο) ... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: green;
+            text-align: center;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background-color: #000;
+            border: 5px solid green;
+            margin: 20px auto;
+        }
+        .pill {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .red-pill {
+            background-color: red;
+        }
+        .blue-pill {
+            background-color: blue;
+        }
+        .snake {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            position: absolute;
+        }
+        #info {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
+            margin: auto;
+        }
+        #hearts {
+            color: red;
+        }
+        #controls {
+            margin-top: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #wallet-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        #high-score {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        /* Game Pad Styles */
+        #game-pad {
+            display: none; /* Αρχικά κρυφό */
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #game-pad button {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            margin: 5px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            #game-pad {
+                display: flex; /* Εμφάνιση μόνο σε κινητές συσκευές */
+            }
+        }
     </style>
 </head>
 <body>
@@ -47,7 +130,7 @@
         const highScoreDisplay = document.getElementById("high-score-value");
 
         // URL του Google Apps Script Web App
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxNVuSVzUvzUTH25NT4bUTZdx_YkoHWGktzNtpe_mPtldpmBUYzdm6UELp9EjeR91_SwQ/exec"; // Αντικατέστησε με το URL σου
+        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxNVuSVzUvzUTH25NT4bUTZdx_YkoHWGktzNtpe_mPtldpmBUYzdm6UELp9EjeR91_SwQ/exec";
 
         // Συνάρτηση για αποθήκευση δεδομένων στο Google Sheet
         async function saveToGoogleSheet(walletAddress, highScore) {
@@ -70,8 +153,6 @@
                 console.error("Error saving data:", error);
             }
         }
-
-        // ... (το υπάρχον JavaScript παραμένει το ίδιο) ...
 
         // Όταν ενημερώνεται το high score
         function checkPillCollision() {
