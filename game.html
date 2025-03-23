@@ -67,10 +67,31 @@
             margin-top: 10px;
             font-size: 18px;
         }
+        /* Game Pad Styles */
+        #game-pad {
+            display: none; /* Αρχικά κρυφό */
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #game-pad button {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            margin: 5px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            #game-pad {
+                display: flex; /* Εμφάνιση μόνο σε κινητές συσκευές */
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Προσθήκη Wallet Container -->
     <div id="wallet-container">
         <button id="connect-button">Connect Wallet</button>
         <button id="disconnect-button" style="display: none;">Disconnect</button>
@@ -89,6 +110,14 @@
         <button id="lose-button">Lose</button>
     </div>
     <div id="high-score">High Score: <span id="high-score-value">0</span></div>
+
+    <!-- Game Pad για κινητές συσκευές -->
+    <div id="game-pad">
+        <button id="up-button">⬆️</button>
+        <button id="down-button">⬇️</button>
+        <button id="left-button">⬅️</button>
+        <button id="right-button">➡️</button>
+    </div>
 
     <script>
         let snake, direction, pills, gameLoop, speed;
@@ -221,6 +250,25 @@
 
         document.getElementById("start-button").addEventListener("click", startGame);
         document.getElementById("lose-button").addEventListener("click", loseLife);
+
+        // Προσθήκη Game Pad Λειτουργίας
+        const upButton = document.getElementById("up-button");
+        const downButton = document.getElementById("down-button");
+        const leftButton = document.getElementById("left-button");
+        const rightButton = document.getElementById("right-button");
+
+        upButton.addEventListener("click", () => {
+            if (direction !== "down") direction = "up";
+        });
+        downButton.addEventListener("click", () => {
+            if (direction !== "up") direction = "down";
+        });
+        leftButton.addEventListener("click", () => {
+            if (direction !== "right") direction = "left";
+        });
+        rightButton.addEventListener("click", () => {
+            if (direction !== "left") direction = "right";
+        });
 
         // Προσθήκη Wallet Connect Λειτουργίας
         const connectButton = document.getElementById("connect-button");
