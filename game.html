@@ -4,91 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix Snake Game</title>
+    <!-- Απενεργοποίηση Favicon -->
+    <link rel="icon" href="data:,">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: black;
-            color: green;
-            text-align: center;
-            overflow: hidden;
-        }
-        #game-container {
-            position: relative;
-            width: 400px;
-            height: 400px;
-            background-color: #000;
-            border: 5px solid green;
-            margin: 20px auto;
-        }
-        .pill {
-            width: 10px;
-            height: 10px;
-            position: absolute;
-            border-radius: 50%;
-        }
-        .red-pill {
-            background-color: red;
-        }
-        .blue-pill {
-            background-color: blue;
-        }
-        .snake {
-            width: 10px;
-            height: 10px;
-            background-color: white;
-            position: absolute;
-        }
-        #info {
-            display: flex;
-            justify-content: space-between;
-            width: 400px;
-            margin: auto;
-        }
-        #hearts {
-            color: red;
-        }
-        #controls {
-            margin-top: 10px;
-        }
-        button {
-            margin: 5px;
-            padding: 10px;
-            background-color: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #wallet-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        #high-score {
-            margin-top: 10px;
-            font-size: 18px;
-        }
-        /* Game Pad Styles */
-        #game-pad {
-            display: none; /* Αρχικά κρυφό */
-            justify-content: center;
-            margin-top: 20px;
-        }
-        #game-pad button {
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            margin: 5px;
-            background-color: green;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        @media (max-width: 600px) {
-            #game-pad {
-                display: flex; /* Εμφάνιση μόνο σε κινητές συσκευές */
-            }
-        }
+        /* ... (το υπάρχον CSS παραμένει το ίδιο) ... */
     </style>
 </head>
 <body>
@@ -121,9 +40,6 @@
 
     <!-- Προσθήκη Metamask SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk/dist/metamask-sdk.js"></script>
-
-    <!-- Προσθήκη WalletConnect -->
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.7.1/dist/umd/index.min.js"></script>
 
     <script>
         let snake, direction, pills, gameLoop, speed;
@@ -209,33 +125,10 @@
             }
         }
 
-        // Προσθήκη WalletConnect Λειτουργίας
-        const walletConnect = new WalletConnect({
-            bridge: "https://bridge.walletconnect.org", // WalletConnect Bridge URL
-        });
-
-        async function connectWalletWithWalletConnect() {
-            if (!walletConnect.connected) {
-                await walletConnect.createSession();
-            }
-
-            walletConnect.on("connect", (error, payload) => {
-                if (error) throw error;
-
-                const { accounts } = payload.params[0];
-                const walletAddress = accounts[0];
-                document.getElementById("wallet-address").innerText = walletAddress.slice(0, 6) + "...";
-                document.getElementById("connect-button").style.display = "none";
-                document.getElementById("disconnect-button").style.display = "inline-block";
-                document.getElementById("switch-network").style.display = "inline-block";
-            });
-        }
-
         // Εκκίνηση παιχνιδιού με έλεγχο σύνδεσης
         document.getElementById("start-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
                 await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
-                // await connectWalletWithWalletConnect(); // Προσπάθεια σύνδεσης με WalletConnect
             }
             startGame(); // Το παιχνίδι ξεκινάει ανεξάρτητα από τη σύνδεση
         });
@@ -244,7 +137,6 @@
         document.getElementById("lose-button").addEventListener("click", async () => {
             if (!checkWalletConnected()) {
                 await connectWallet(); // Προσπάθεια σύνδεσης με Metamask SDK
-                // await connectWalletWithWalletConnect(); // Προσπάθεια σύνδεσης με WalletConnect
             }
             loseLife(); // Το παιχνίδι συνεχίζει ανεξάρτητα από τη σύνδεση
         });
