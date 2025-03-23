@@ -6,151 +6,262 @@
     <title>Matrix Snake Game</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             background-color: black;
             color: green;
-            font-family: 'Courier New', monospace;
             text-align: center;
+            overflow: hidden;
         }
-        canvas {
-            background-color: black;
-            display: block;
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background-color: #000;
+            border: 5px solid green;
+            margin: 20px auto;
+        }
+        .pill {
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .red-pill {
+            background-color: red;
+        }
+        .blue-pill {
+            background-color: blue;
+        }
+        .snake {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            position: absolute;
+        }
+        #info {
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
             margin: auto;
-            border: 1px solid green;
         }
         #hearts {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        .heart {
             color: red;
-            font-size: 24px;
-            margin: 0 5px;
+        }
+        #controls {
+            margin-top: 10px;
         }
         button {
-            background-color: green;
-            color: black;
-            border: none;
-            padding: 10px 20px;
             margin: 5px;
+            padding: 10px;
+            background-color: green;
+            color: white;
+            border: none;
             cursor: pointer;
-            font-size: 16px;
+        }
+        #wallet-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        #high-score {
+            margin-top: 10px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <h1>Matrix Snake Game</h1>
-    <div id="hearts">
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
+    <!-- Προσθήκη Wallet Container -->
+    <div id="wallet-container">
+        <button id="connect-button">Connect Wallet</button>
+        <button id="disconnect-button" style="display: none;">Disconnect</button>
+        <button id="switch-network" style="display: none;">Switch to Polygon</button>
+        <span id="wallet-address"></span>
     </div>
-    <button id="startButton">Start</button>
-    <button id="loseButton">Lose Life</button>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const box = 20;
-        let snake = [{ x: 200, y: 200 }];
-        let direction = "RIGHT";
-        let food = generateFood();
-        let speed = 200;
-        let hearts = 3;
-        let gameInterval;
 
-        document.addEventListener("keydown", changeDirection);
-        document.getElementById("startButton").addEventListener("click", startGame);
-        document.getElementById("loseButton").addEventListener("click", loseLife);
+    <h1>Matrix Snake Game</h1>
+    <div id="info">
+        <span id="hearts">❤️❤️❤️</span>
+        <span>Pills: <span id="pill-count">0</span></span>
+    </div>
+    <div id="game-container"></div>
+    <div id="controls">
+        <button id="start-button">Start</button>
+        <button id="lose-button">Lose</button>
+    </div>
+    <div id="high-score">High Score: <span id="high-score-value">0</span></div>
+
+    <script>
+        let snake, direction, pills, gameLoop, speed;
+        let hearts = 3;
+        let pillCount = 0;
+        let highScore = 0;
+        const gameContainer = document.getElementById("game-container");
+        const pillCounter = document.getElementById("pill-count");
+        const heartsDisplay = document.getElementById("hearts");
+        const highScoreDisplay = document.getElementById("high-score-value");
+
+        function resetGame() {
+            hearts = 3;
+            pillCount = 0;
+            speed = 200; 
+            heartsDisplay.innerText = "❤️❤️❤️";
+            pillCounter.innerText = pillCount;
+            clearInterval(gameLoop);
+            gameContainer.innerHTML = "";
+        }
 
         function startGame() {
-            if (gameInterval) clearInterval(gameInterval);
-            snake = [{ x: 200, y: 200 }];
-            direction = "RIGHT";
-            speed = 200;
-            hearts = 3;
-            updateHearts();
-            gameInterval = setInterval(draw, speed);
+            resetGame(); 
+            snake = [{x: 200, y: 200}];
+            direction = "right";
+            pills = [];
+            gameContainer.innerHTML = "";
+            spawnPill(); 
+            gameLoop = setInterval(moveSnake, speed);
         }
 
-        function loseLife() {
-            if (hearts > 0) {
-                hearts--;
-                updateHearts();
-                snake = [{ x: 200, y: 200 }]; // Reset snake position
-                if (hearts === 0) {
-                    clearInterval(gameInterval);
-                    alert("Access Denied by the AI Core");
-                }
+        function spawnPill() {
+            let x, y;
+            do {
+                x = Math.floor(Math.random() * 40) * 10;
+                y = Math.floor(Math.random() * 40) * 10;
+            } while (isPositionOccupied(x, y));
+
+            let pill = document.createElement("div");
+            pill.classList.add("pill", Math.random() > 0.5 ? "red-pill" : "blue-pill");
+            pill.style.left = `${x}px`;
+            pill.style.top = `${y}px`;
+            gameContainer.appendChild(pill);
+            pills.push({x, y, element: pill});
+        }
+
+        function isPositionOccupied(x, y) {
+            if (x < 0 || x >= 400 || y < 0 || y >= 400) return true;
+            for (let segment of snake) {
+                if (segment.x === x && segment.y === y) return true;
             }
-        }
-
-        function updateHearts() {
-            const heartContainer = document.getElementById("hearts");
-            heartContainer.innerHTML = "";
-            for (let i = 0; i < hearts; i++) {
-                const heart = document.createElement("span");
-                heart.classList.add("heart");
-                heart.innerHTML = "❤️";
-                heartContainer.appendChild(heart);
-            }
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawSnake();
-            drawFood();
-            moveSnake();
-        }
-
-        function drawSnake() {
-            snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? "white" : "green";
-                ctx.fillRect(segment.x, segment.y, box, box);
-            });
-        }
-
-        function drawFood() {
-            ctx.fillStyle = "red";
-            ctx.fillRect(food.x, food.y, box, box);
+            return false;
         }
 
         function moveSnake() {
-            let head = { ...snake[0] };
-            if (direction === "LEFT") head.x -= box;
-            if (direction === "RIGHT") head.x += box;
-            if (direction === "UP") head.y -= box;
-            if (direction === "DOWN") head.y += box;
+            let head = {...snake[0]};
+            if (direction === "right") head.x += 10;
+            if (direction === "left") head.x -= 10;
+            if (direction === "down") head.y += 10;
+            if (direction === "up") head.y -= 10;
 
-            if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height) {
+            if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
                 loseLife();
                 return;
             }
 
             snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) {
-                food = generateFood();
-                speed *= 0.95;
-                clearInterval(gameInterval);
-                gameInterval = setInterval(draw, speed);
+            if (!checkPillCollision()) snake.pop();
+            renderSnake();
+        }
+
+        function checkPillCollision() {
+            for (let i = 0; i < pills.length; i++) {
+                if (snake[0].x === pills[i].x && snake[0].y === pills[i].y) {
+                    pills[i].element.remove();
+                    pills.splice(i, 1);
+                    pillCount++;
+                    pillCounter.innerText = pillCount;
+                    speed *= 0.99;
+                    clearInterval(gameLoop);
+                    gameLoop = setInterval(moveSnake, speed);
+                    spawnPill();
+
+                    if (pillCount > highScore) {
+                        highScore = pillCount;
+                        highScoreDisplay.innerText = highScore;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function renderSnake() {
+            const existingSnakeParts = document.querySelectorAll(".snake");
+            existingSnakeParts.forEach(part => part.remove());
+
+            snake.forEach(segment => {
+                let part = document.createElement("div");
+                part.classList.add("snake");
+                part.style.left = `${segment.x}px`;
+                part.style.top = `${segment.y}px`;
+                gameContainer.appendChild(part);
+            });
+        }
+
+        function loseLife() {
+            hearts--;
+            heartsDisplay.innerText = "❤️".repeat(hearts);
+            if (hearts === 0) {
+                alert("Access Denied by the AI Core");
+                clearInterval(gameLoop);
+                resetGame();
+                return;
             } else {
-                snake.pop();
+                speed = 200;
+                clearInterval(gameLoop);
+                snake = [{x: 200, y: 200}]; 
+                direction = "right"; 
+                gameLoop = setInterval(moveSnake, speed);
             }
         }
 
-        function changeDirection(event) {
-            if (event.keyCode === 37 && direction !== "RIGHT") direction = "LEFT";
-            if (event.keyCode === 38 && direction !== "DOWN") direction = "UP";
-            if (event.keyCode === 39 && direction !== "LEFT") direction = "RIGHT";
-            if (event.keyCode === 40 && direction !== "UP") direction = "DOWN";
-        }
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp" && direction !== "down") direction = "up";
+            if (e.key === "ArrowDown" && direction !== "up") direction = "down";
+            if (e.key === "ArrowLeft" && direction !== "right") direction = "left";
+            if (e.key === "ArrowRight" && direction !== "left") direction = "right";
+        });
 
-        function generateFood() {
-            return {
-                x: Math.floor(Math.random() * (canvas.width / box)) * box,
-                y: Math.floor(Math.random() * (canvas.height / box)) * box
-            };
-        }
+        document.getElementById("start-button").addEventListener("click", startGame);
+        document.getElementById("lose-button").addEventListener("click", loseLife);
+
+        // Προσθήκη Wallet Connect Λειτουργίας
+        const connectButton = document.getElementById("connect-button");
+        const disconnectButton = document.getElementById("disconnect-button");
+        const switchNetworkButton = document.getElementById("switch-network");
+        const walletAddress = document.getElementById("wallet-address");
+
+        connectButton.addEventListener("click", async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    walletAddress.innerText = accounts[0].slice(0, 6) + "...";
+                    connectButton.style.display = "none";
+                    disconnectButton.style.display = "inline-block";
+                    switchNetworkButton.style.display = "inline-block";
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                alert("Please install Metamask!");
+            }
+        });
+
+        disconnectButton.addEventListener("click", () => {
+            walletAddress.innerText = "";
+            connectButton.style.display = "inline-block";
+            disconnectButton.style.display = "none";
+            switchNetworkButton.style.display = "none";
+        });
+
+        switchNetworkButton.addEventListener("click", async () => {
+            try {
+                await ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: "0x89" }], // Polygon Mainnet
+                });
+                alert("Switched to Polygon Network!");
+            } catch (error) {
+                console.error(error);
+            }
+        });
     </script>
 </body>
 </html>
